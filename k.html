@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key System</title>
+<style>
+  :root{
+    --bg1:#0f0c29;
+    --bg2:#302b63;
+    --bg3:#24243e;
+    --accent:#00e5ff;
+    --accent2:#ff2ecb;
+    --gold:#ffd54a;
+    --card:#171426;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+    background-size:400% 400%;
+    animation:bgmove 12s ease infinite;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    padding:20px;
+  }
+  @keyframes bgmove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+  .card{
+    background:rgba(23,20,38,0.85);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px;
+    padding:36px;
+    max-width:440px;
+    width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    top:-50%;left:-50%;
+    width:200%;height:200%;
+    background:conic-gradient(from 0deg,var(--accent),var(--accent2),var(--gold),var(--accent));
+    opacity:0.08;
+    animation:spin 10s linear infinite;
+    pointer-events:none;
+    z-index:0;
+  }
+  .card > *{
+    position:relative;
+    z-index:1;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  h1{
+    margin:0 0 6px;
+    font-size:26px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    position:relative;
+  }
+  p.sub{color:#aaa;margin:0 0 24px;font-size:13px;position:relative;}
+  button, .navlink{
+    position:relative;
+    cursor:pointer;
+    border:none;
+    padding:14px 28px;
+    font-size:16px;
+    font-weight:600;
+    border-radius:12px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    color:#0f0c29;
+    transition:transform .15s ease, box-shadow .3s ease;
+    width:100%;
+    margin-top:10px;
+  }
+  button:hover{
+    transform:translateY(-3px) scale(1.02);
+    box-shadow:0 10px 25px rgba(0,229,255,0.4);
+  }
+  button:active{transform:translateY(0) scale(0.98);}
+  button:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  .keybox{
+    margin-top:22px;
+    padding:18px;
+    border-radius:12px;
+    background:#0d0b17;
+    border:1px dashed var(--gold);
+    font-family:'Consolas',monospace;
+    font-size:20px;
+    letter-spacing:2px;
+    color:var(--gold);
+    word-break:break-all;
+    opacity:0;
+    transform:scale(0.8);
+    transition:all .4s ease;
+  }
+  .keybox.show{
+    opacity:1;
+    transform:scale(1);
+    box-shadow:0 0 25px rgba(255,213,74,0.5);
+  }
+  .copybtn{
+    margin-top:10px;
+    background:transparent;
+    border:1px solid var(--accent);
+    color:var(--accent);
+    padding:8px 16px;
+    font-size:13px;
+    width:auto;
+  }
+  .copybtn:hover{box-shadow:0 0 15px rgba(0,229,255,0.4);}
+
+  input{
+    width:100%;
+    padding:12px 14px;
+    margin-top:10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.15);
+    background:#0d0b17;
+    color:#fff;
+    font-size:14px;
+    outline:none;
+  }
+  input:focus{border-color:var(--accent);box-shadow:0 0 10px rgba(0,229,255,0.3);}
+
+  .toplinks{display:flex;gap:8px;justify-content:center;margin-bottom:18px;}
+  .toplinks span{
+    font-size:12px;color:#888;cursor:pointer;
+    padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);
+  }
+  .toplinks span.active{color:#0f0c29;background:var(--accent);border-color:var(--accent);}
+
+  .msg{font-size:13px;margin-top:12px;min-height:18px;}
+  .msg.err{color:#ff5b7f;}
+  .msg.ok{color:#5bff9b;}
+
+  .keylist{
+    text-align:left;
+    max-height:220px;
+    overflow-y:auto;
+    margin-top:16px;
+    font-family:'Consolas',monospace;
+    font-size:13px;
+  }
+  .keyitem{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#0d0b17;
+    padding:8px 12px;
+    border-radius:8px;
+    margin-bottom:6px;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .keyitem button{
+    width:auto;
+    padding:4px 10px;
+    font-size:12px;
+    margin:0;
+    background:#ff2ecb;
+    color:#fff;
+  }
+  .hidden{display:none !important;}
+  .count{font-size:12px;color:#888;margin-top:14px;}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="toplinks">
+    <span id="tabUser" class="active" onclick="showTab('user')">Lấy Key</span>
+    <span id="tabAdmin" onclick="showTab('admin')">Admin</span>
+  </div>
+
+  <!-- USER VIEW -->
+  <div id="viewUser">
+    <h1>🔑 Get Key</h1>
+    <p class="sub">Bấm nút bên dưới để nhận key</p>
+    <button id="getKeyBtn" onclick="getKey()">GET KEY</button>
+    <div id="keybox" class="keybox"></div>
+    <button id="copyBtn" class="copybtn hidden" onclick="copyKey()">Copy Key</button>
+    <div id="userMsg" class="msg"></div>
+    <div class="count" id="stockCount"></div>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div id="viewAdminLogin" class="hidden">
+    <h1>🔒 Admin Login</h1>
+    <p class="sub">Đăng nhập để quản lý key</p>
+    <input type="text" id="adminUser" placeholder="Tên đăng nhập">
+    <input type="password" id="adminPass" placeholder="Mật khẩu">
+    <button onclick="loginAdmin()">Đăng nhập</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="viewAdminPanel" class="hidden">
+    <h1>⚙️ Quản lý Key</h1>
+    <p class="sub">Thêm key mới vào kho</p>
+    <input type="text" id="newKeyInput" placeholder="Nhập key mới, VD: ABCD-1234-EFGH">
+    <button onclick="addKey()">Thêm Key</button>
+    <button onclick="logoutAdmin()" style="background:#333;color:#fff;margin-top:8px;">Đăng xuất</button>
+    <div id="adminMsg" class="msg"></div>
+    <div class="keylist" id="keyList"></div>
+  </div>
+
+</div>
+
+<script>
+  // ===== Cấu hình admin (chỉ demo, không dùng cho hệ thống thật cần bảo mật cao) =====
+  const ADMIN_USER = "andz";
+  const ADMIN_PASS = "2405";
+
+  // Lưu dữ liệu trong bộ nhớ (biến JS) thay vì localStorage/sessionStorage
+  let keyPool = [];
+  let isAdminLoggedIn = false;
+
+  function loadKeys(){
+    return keyPool;
+  }
+  function saveKeys(keys){
+    keyPool = keys;
+  }
+
+  function showTab(tab){
+    document.getElementById('tabUser').classList.toggle('active', tab==='user');
+    document.getElementById('tabAdmin').classList.toggle('active', tab==='admin');
+    document.getElementById('viewUser').classList.toggle('hidden', tab!=='user');
+
+    document.getElementById('viewAdminLogin').classList.toggle('hidden', tab!=='admin' || isAdminLoggedIn);
+    document.getElementById('viewAdminPanel').classList.toggle('hidden', tab!=='admin' || !isAdminLoggedIn);
+
+    if(tab==='admin' && isAdminLoggedIn) renderKeyList();
+    if(tab==='user') updateStockCount();
+  }
+
+  function loginAdmin(){
+    const u = document.getElementById('adminUser').value.trim();
+    const p = document.getElementById('adminPass').value.trim();
+    const msg = document.getElementById('loginMsg');
+    if(u === ADMIN_USER && p === ADMIN_PASS){
+      isAdminLoggedIn = true;
+      msg.textContent = '';
+      showTab('admin');
+    } else {
+      msg.textContent = 'Sai tên đăng nhập hoặc mật khẩu!';
+      msg.className = 'msg err';
+    }
+  }
+
+  function logoutAdmin(){
+    isAdminLoggedIn = false;
+    showTab('admin');
+  }
+
+  function addKey(){
+    const input = document.getElementById('newKeyInput');
+    const val = input.value.trim();
+    const msg = document.getElementById('adminMsg');
+    if(!val){
+      msg.textContent = 'Vui lòng nhập key!';
+      msg.className = 'msg err';
+      return;
+    }
+    const keys = loadKeys();
+    keys.push(val);
+    saveKeys(keys);
+    input.value = '';
+    msg.textContent = 'Đã thêm key thành công!';
+    msg.className = 'msg ok';
+    renderKeyList();
+  }
+
+  function removeKey(idx){
+    const keys = loadKeys();
+    keys.splice(idx,1);
+    saveKeys(keys);
+    renderKeyList();
+  }
+
+  function renderKeyList(){
+    const keys = loadKeys();
+    const list = document.getElementById('keyList');
+    if(keys.length === 0){
+      list.innerHTML = '<p style="color:#666;font-size:12px;">Chưa có key nào trong kho.</p>';
+      return;
+    }
+    list.innerHTML = keys.map((k,i)=>`
+      <div class="keyitem">
+        <span>${k}</span>
+        <button onclick="removeKey(${i})">Xóa</button>
+      </div>
+    `).join('');
+  }
+
+  function updateStockCount(){
+    const keys = loadKeys();
+    document.getElementById('stockCount').textContent = `Còn ${keys.length} key trong kho`;
+  }
+
+  function getKey(){
+    const keys = loadKeys();
+    const box = document.getElementById('keybox');
+    const msg = document.getElementById('userMsg');
+    const copyBtn = document.getElementById('copyBtn');
+
+    if(keys.length === 0){
+      box.classList.remove('show');
+      copyBtn.classList.add('hidden');
+      msg.textContent = 'Hiện chưa có key nào, vui lòng quay lại sau!';
+      msg.className = 'msg err';
+      return;
+    }
+
+    // lấy key đầu tiên trong kho và xóa khỏi kho (key dùng 1 lần)
+    const key = keys.shift();
+    saveKeys(keys);
+
+    box.classList.remove('show');
+    void box.offsetWidth; // reset animation
+    box.textContent = key;
+    box.classList.add('show');
+    copyBtn.classList.remove('hidden');
+    copyBtn.dataset.key = key;
+
+    msg.textContent = 'Lấy key thành công!';
+    msg.className = 'msg ok';
+    updateStockCount();
+  }
+
+  function copyKey(){
+    const key = document.getElementById('copyBtn').dataset.key;
+    navigator.clipboard.writeText(key).then(()=>{
+      const msg = document.getElementById('userMsg');
+      msg.textContent = 'Đã copy key vào clipboard!';
+      msg.className = 'msg ok';
+    });
+  }
+
+  // init
+  updateStockCount();
+</script>
+
+</body>
+</html>
